@@ -2,11 +2,7 @@
 	"libs":[
 		"browser"
 	],
-	"plugins": {
-		"node": { }
-	},
 	"loadEagerly":[
-		"libs/**/*.js",
-		"src/**/*.js"
+		"depth/**/*.js"
 	]
 }
