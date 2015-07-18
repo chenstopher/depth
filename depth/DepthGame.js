@@ -14,36 +14,19 @@ depth.DepthGame = function(options){
 	this.scene = null;
 	this.camera = null;
 	this.cube = null;
-
-	this.input = {
-		up : false,
-		down : false,
-		left : false,
-		right : false,
-
-		mouse : {
-			x : 0,
-			y : 0
-		}
-	};
 };
 
 depth.DepthGame.prototype.init = function(){
 	console.log("init");
 	var self = this;
 
+
 	this.canvas = document.getElementById(this.options.canvasID);
 	this.engine = new BABYLON.Engine(this.canvas, this.options.antialias);
 
+	Input.init(this.canvas);
+
 	BABYLON.Tools.RegisterTopRootEvents([
-		{
-			name: "keydown",
-			handler: function(evt){ self._onKeyDown(evt);}
-		},
-		{
-			name: "keyup",
-			handler: function(evt){ self._onKeyUp(evt);}
-		},
 		{
 			name: "resize",
 			handler: function(){ self.engine.resize(); }
@@ -74,63 +57,37 @@ depth.DepthGame.prototype.start = function(){
 	});
 };
 
-depth.DepthGame.prototype._onKeyDown = function(evt){
-	console.log('down '+evt.keyCode);
-	if(evt.keyCode == KeyCode.COMMA){
-		this.input.up = true;
-	}
-
-	if(evt.keyCode == KeyCode.O){
-		this.input.down = true;
-	}
-
-	if(evt.keyCode == KeyCode.A){
-		this.input.left = true;
-	}
-
-	if(evt.keyCode == KeyCode.E){
-		this.input.right = true;
-	}
-};
-
-depth.DepthGame.prototype._onKeyUp = function(evt){
-	console.log('up '+evt.keyCode);
-
-	if(evt.keyCode == KeyCode.COMMA){
-		this.input.up = false;
-	}
-
-	if(evt.keyCode == KeyCode.O){
-		this.input.down = false;
-	}
-
-	if(evt.keyCode == KeyCode.A){
-		this.input.left = false;
-	}
-
-	if(evt.keyCode == KeyCode.E){
-		this.input.right = false;
-	}
-};
-
 depth.DepthGame.prototype.update = function(){
-	if(this.input.up){
+
+	if(Input.getKeyDown(KeyCode.RETURN)){
+		console.log("down enter");
+		Input.lockCursor(true);
+	}
+
+	if(Input.getKeyUp(KeyCode.RETURN)){
+		console.log("up enter");
+	}
+
+	this.cube.rotation.x += 0.005 * Input.getMouseDelta().y;
+	this.cube.rotation.y += 0.005 * Input.getMouseDelta().x;
+
+	if(Input.getKey(KeyCode.COMMA)){
 		this.cube.rotation.x += 0.05;
 	}
 
-	if(this.input.down){
+	if(Input.getKey(KeyCode.O)){
 		this.cube.rotation.x -= 0.05;
 	}
 
-	if(this.input.left){
+	if(Input.getKey(KeyCode.A)){
 		this.cube.rotation.y += 0.05;
 	}
 
-	if(this.input.right){
+	if(Input.getKey(KeyCode.E)){
 		this.cube.rotation.y -= 0.05;
 	}
 
-	// reset input
+	Input.endFrame();
 };
 
 depth.DepthGame.prototype.render = function(){
