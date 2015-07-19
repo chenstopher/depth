@@ -15,9 +15,9 @@ var KeyCode = {
 	SPACE: 32,
 	PAGE_UP: 33,
 	PAGE_DOWN: 34,
-	END: 35,
-	HOME: 36,
-	LEFT: 37,
+    END: 35,
+    HOME: 36,
+    LEFT: 37,
 	UP: 38,
 	RIGHT: 39,
 	DOWN: 40,
@@ -121,11 +121,12 @@ var Input = (function(){
 	var event = {};
 	var mouse = {x:0.0, y:0.0};
 	var mouseDelta = {x:0.0, y:0.0};
+	var inputCanvas = null;
 
 	return {
 		init : function(canvas){
 			document.addEventListener("keydown", function(evt){
-				console.log("keydown "+evt.keyCode);
+				//console.log("keydown "+evt.keyCode);
 				if(state[evt.keyCode] === false || state[evt.keyCode] === undefined){
 					event[evt.keyCode] = true;
 				}
@@ -133,7 +134,7 @@ var Input = (function(){
 			});
 
 			document.addEventListener("keyup", function(evt){
-				console.log("keyup "+evt.keyCode);
+				//console.log("keyup "+evt.keyCode);
 				if(state[evt.keyCode] === true){
 					event[evt.keyCode] = false;
 				}
@@ -146,21 +147,24 @@ var Input = (function(){
 
 				mouseDelta.x = evt.movementX;
 				mouseDelta.y = evt.movementY;
-				console.log('mousemove '+mouseDelta);
+				//console.log('mousemove '+mouseDelta);
 			});
 
 			document.addEventListener('mousestop', function(evt){
 				mouseDelta.x = 0;
 				mouseDelta.y = 0;
-				console.log('mousestop '+mouseDelta);
+				//console.log('mousestop '+mouseDelta);
 			});
 
 			canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock || canvas.webkitRequestPointerLock;
-			//document.exitPointerLock = document.exitPointerLock ||  document.mozExitPointerLock || document.webkitExitPointerLock;
+			document.exitPointerLock = document.exitPointerLock ||  document.mozExitPointerLock || document.webkitExitPointerLock;
+			document.pointerLockElement = document.pointerLockElement ||  document.mozPointerLockElement || document.webkitPointerLockElement;
 
 			canvas.addEventListener("click", function(evt){
 				canvas.requestPointerLock();
 			});
+
+			inputCanvas = canvas;
 		},
 
 		getKey : function(keyCode){
@@ -182,6 +186,10 @@ var Input = (function(){
 		getMouseDelta : function() {
 			return mouseDelta;
     	},
+
+		isPointerLocked : function() {
+			return document.pointerLockElement == inputCanvas;
+		},
 
 		endFrame : function(){
 			events = {};
