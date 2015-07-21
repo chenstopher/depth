@@ -118,7 +118,7 @@ var KeyCode = {
 
 var Input = (function(){
 	var state = {};
-	var event = {};
+	var events = {};
 	var mouse = {x:0.0, y:0.0};
 	var mouseDelta = {x:0.0, y:0.0};
 	var inputCanvas = null;
@@ -145,8 +145,8 @@ var Input = (function(){
 				mouse.x = evt.clientX;
 				mouse.y = evt.clientY;
 
-				mouseDelta.x = evt.movementX;
-				mouseDelta.y = evt.movementY;
+				mouseDelta.x += evt.movementX;
+				mouseDelta.y += evt.movementY;
 				//console.log('mousemove '+mouseDelta);
 			});
 
@@ -172,11 +172,11 @@ var Input = (function(){
 		},
 
 		getKeyUp : function(keyCode){
-			return event[keyCode] === false;
+			return events[keyCode] === false;
 		},
 
 		getKeyDown : function(keyCode){
-			return event[keyCode] === true;
+			return events[keyCode] === true;
 		},
 
 		getMousePos : function() {
