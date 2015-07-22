@@ -128,7 +128,7 @@ var Input = (function(){
 			document.addEventListener("keydown", function(evt){
 				//console.log("keydown "+evt.keyCode);
 				if(state[evt.keyCode] === false || state[evt.keyCode] === undefined){
-					event[evt.keyCode] = true;
+					events[evt.keyCode] = true;
 				}
 				state[evt.keyCode] = true;
 			});
@@ -136,7 +136,7 @@ var Input = (function(){
 			document.addEventListener("keyup", function(evt){
 				//console.log("keyup "+evt.keyCode);
 				if(state[evt.keyCode] === true){
-					event[evt.keyCode] = false;
+					events[evt.keyCode] = false;
 				}
 				state[evt.keyCode] = false;
 			});
