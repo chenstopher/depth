@@ -4,18 +4,23 @@ depth.scripts = depth.scripts || {};
 pc.script.create('player', function(app){
 	depth.scripts.Player = function(entity) {
 		this.entity = entity;
-		this.force = new pc.Vec3(0, 0, 0);
 		this.camera = null;
 		this.pitch = 0;
 		this.yaw = 0;
 		this.sensitivity = 10;
 
+		this.onGround = false;
+		this.dir = new pc.Vec3(0, 0, 0);
+		this.force = new pc.Vec3(0, 0, 0);
+		this.jumpImpulse = new pc.Vec3(0, 5, 0);
+		this.groundRayExtent = new pc.Vec3(0, 0, 0);
+		this.camY = 0;
 	};
 
 	depth.scripts.Player.prototype = {
 		initialize : function (){
-			// I'd like to inject this rather than look it up but I can't figure out how to. Because
-			// a entity.script.player isn't available till initialize.
+			// I'd like to inject this rather than look it up but I can't figure out how to because
+			// a entity.script.player isn't available till initialize().
 			this.camera = app.root.findByName('MainCamera');
 			console.log('player init');
 
@@ -23,36 +28,37 @@ pc.script.create('player', function(app){
 			app.mouse.on(pc.EVENT_MOUSEMOVE, this.onMouseMove, this);
 			app.mouse.on(pc.EVENT_MOUSEDOWN, this.onMouseDown, this);
 
-			this.entity.rigidbody.angularFactor.set(0, 0, 0);
+			this.groundRayExtent.y = -((this.entity.collision.height/2) + .3);
+			this.camY = this.entity.collision.height/2;
 		},
 
 		update: function (dt) {
-			var force = new pc.Vec3(0, 0, 0);
+			this._checkGround();
+
+			this.dir.set(0, 0, 0);
 			if(app.keyboard.isPressed(pc.KEY_COMMA)){
-				force.z -= 20;
+				this.dir.z -= 1;
 			}
 			if(app.keyboard.isPressed(pc.KEY_O)){
-				force.z += 20;
+				this.dir.z += 1;
 			}
 			if(app.keyboard.isPressed(pc.KEY_A)){
-				force.x -= 20;
+				this.dir.x -= 1;
 			}
 			if(app.keyboard.isPressed(pc.KEY_E)){
-				force.x += 20;
+				this.dir.x += 1;
 			}
 
-			force = this.camera.getWorldTransform().transformVector(force);
-			force.y = 0;
+			this._move(this.dir);
 
-			this.entity.rigidbody.applyForce(force);
-
-			if(app.keyboard.wasPressed(pc.KEY_SPACE)){
-				this.entity.rigidbody.applyImpulse(new pc.Vec3(0, 5, 0));
+			if(this.onGround && app.keyboard.wasPressed(pc.KEY_SPACE)){
+				this._jump();
 			}
 
 			if(this.camera != null){
+				// Could probably just parent the camera
 				this.camera.setPosition(this.entity.getPosition());
-				this.camera.translateLocal(0, 2, 0);
+				this.camera.translateLocal(0, this.camY, 0);
 				this.camera.setEulerAngles(this.pitch, this.yaw, 0);
 			}
 		},
@@ -67,6 +73,73 @@ pc.script.create('player', function(app){
 			if(!pc.Mouse.isPointerLocked()){
 				app.mouse.enablePointerLock();
 			}
+		},
+
+		_checkGround: function(){
+			var self = this;
+			var start = this.entity.getPosition();
+			var end = start.clone().add(this.groundRayExtent);
+
+			var wasOnGround = self.onGround;
+			self.onGround = false;
+
+			var castResult = function (result) {
+				// We hit this entity so just keep advancing the start position so that we are no longer
+				// hitting this entity. Ideally there would be a raycastAll function.
+				if(result.entity == self.entity){
+					var start = result.point.clone();
+					var len = result.point.clone().sub(end).lengthSq();
+					if(len > .001){
+						start.add(end.clone().sub(start).normalize().scale(.001));
+						app.systems.rigidbody.raycastFirst(start, end, castResult);
+					}
+					return;
+				}
+
+				self.onGround = true;
+			};
+
+			app.systems.rigidbody.raycastFirst(start, end, castResult);
+		},
+
+		_move: function(dir){
+			this.force = this.camera.getWorldTransform().transformVector(dir);
+			this.force.y = 0;
+			this.force.scale(this.onGround ? 100 : 0);
+
+			this.entity.rigidbody.applyForce(this.force);
+
+			if(this.onGround){
+				var vel = this.entity.rigidbody.linearVelocity;
+				var velY = vel.y;
+				vel.y = 0;
+
+				var speed = vel.length();
+				var maxSpeed = 15;
+
+				// Clamp max speed
+				// TODO maybe better use forces rather than setting linvel?
+				if(speed > maxSpeed){
+					vel.normalize().scale(maxSpeed);
+					vel.y = velY;
+					this.entity.rigidbody.linearVelocity = vel;
+				}
+
+				// Apply a stopping force when not trying to move
+				if(this.force.lengthSq() == 0){
+					vel = this.entity.rigidbody.linearVelocity;
+					vel.y = 0;
+					vel.scale(-10);
+					this.entity.rigidbody.applyForce(vel);
+				}
+			}
+
+			// TODO air strafing
+		},
+
+		_jump: function(){
+			this.entity.rigidbody.applyImpulse(this.jumpImpulse);
+			this.onGround = false;
 		}
 
 	};
