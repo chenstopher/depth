@@ -80,26 +80,19 @@ pc.script.create('player', function(app){
 			var start = this.entity.getPosition();
 			var end = start.clone().add(this.groundRayExtent);
 
-			var wasOnGround = self.onGround;
 			self.onGround = false;
 
-			var castResult = function (result) {
-				// We hit this entity so just keep advancing the start position so that we are no longer
-				// hitting this entity. Ideally there would be a raycastAll function.
+			// Turn off collider temporarily so I dont hit myself
+			this.entity.collision.enabled = false;
+			app.systems.rigidbody.raycastFirst(start, end, function(result){
 				if(result.entity == self.entity){
-					var start = result.point.clone();
-					var len = result.point.clone().sub(end).lengthSq();
-					if(len > .001){
-						start.add(end.clone().sub(start).normalize().scale(.001));
-						app.systems.rigidbody.raycastFirst(start, end, castResult);
-					}
-					return;
+					// This shouldn't happen though...
+					console.log("hit myself");
 				}
 
 				self.onGround = true;
-			};
-
-			app.systems.rigidbody.raycastFirst(start, end, castResult);
+			});
+			this.entity.collision.enabled = true;
 		},
 
 		_move: function(dir){
@@ -141,7 +134,6 @@ pc.script.create('player', function(app){
 			this.entity.rigidbody.applyImpulse(this.jumpImpulse);
 			this.onGround = false;
 		}
-
 	};
 
 	return depth.scripts.Player;
