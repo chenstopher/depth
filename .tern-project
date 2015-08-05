@@ -1,8 +1,0 @@
-{
-	"libs":[
-		"browser"
-	],
-	"loadEagerly":[
-		"depth/**/*.js"
-	]
-}
