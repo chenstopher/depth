@@ -78,7 +78,7 @@ depth.DepthGame.prototype.init = function(){
 
 	var light = new pc.Entity();
 	light.addComponent('light', {
-		castShadows: true
+		castShadows: false
 	});
 	light.setEulerAngles(-35, 0, -15);
 	this.app.root.addChild(light);

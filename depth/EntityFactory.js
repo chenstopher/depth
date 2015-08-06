@@ -8,10 +8,10 @@ depth.EntityFactory.prototype.createPlayer = function(position){
 	var player = new pc.Entity();
 	player.addComponent('script', { scripts: [{name: 'player', url: 'depth/scripts/Player.js'}] });
 
-	player.addComponent('model', {
-		type: 'capsule',
-		castShadows: true
-	});
+	//player.addComponent('model', {
+	//	type: 'capsule',
+	//	castShadows: true
+	//});
 
 	player.addComponent('collision', {
 		type: 'capsule',
