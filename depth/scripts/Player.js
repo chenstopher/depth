@@ -70,9 +70,11 @@ pc.script.create('player', function(app){
 		},
 
 		onMouseMove: function(event) {
-			this.pitch -= event.dy / this.sensitivity;
-			this.pitch = pc.math.clamp(this.pitch, -90, 90);
-			this.yaw -= event.dx / this.sensitivity;
+			if(pc.Mouse.isPointerLocked()){
+				this.pitch -= event.dy / this.sensitivity;
+				this.pitch = pc.math.clamp(this.pitch, -90, 90);
+				this.yaw -= event.dx / this.sensitivity;
+			}
 		},
 
 		onMouseDown: function(event){
